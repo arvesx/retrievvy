@@ -12,3 +12,8 @@ wheels/
 # IDE
 .idea
 .ruff_cache
+
+.env
+
+# other
+qdrant_storage
