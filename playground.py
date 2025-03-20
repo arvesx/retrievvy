@@ -1,5 +1,5 @@
 import asyncio
-from retrievvy import embeddings
+from retrievvy.nlp import embeddings
 
 print("gamw to")
 

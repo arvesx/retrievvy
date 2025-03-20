@@ -1,7 +1,7 @@
 import shutil
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional, Any, Literal
+from typing import Optional, Any
 
 import xapian
 
@@ -29,7 +29,7 @@ class Hit:
 # ----------------
 
 
-def create(name: str, stemmer: Literal["en"]) -> None:
+def create(name: str) -> None:
     path = DIR_SPARSE / name
     if path.exists():
         raise FileExistsError(f"Sparse index '{name}' already exists at {path}")
