@@ -6,7 +6,9 @@ from qdrant_client.models import (
     PointStruct,
     PointIdsList,
     VectorParams,
-    Distance
+    Distance,
+    Filter,
+    HasIdCondition,
 )
 
 # Client
@@ -31,20 +33,21 @@ class Hit:
     vector: list[float]
     score: float
 
+
 # Interaction funcs ------
 
 # Index Management
 # ----------------
 
 
-async def create(name: str, emb_size: int):
+async def create(name: str, emb_size: int) -> None:
     await client.create_collection(
         collection_name=name,
         vectors_config=VectorParams(size=emb_size, distance=Distance.COSINE),
     )
 
 
-async def delete(name: str):
+async def delete(name: str) -> None:
     await client.delete_collection(collection_name=name)
 
 
@@ -52,9 +55,9 @@ async def delete(name: str):
 # -------
 
 
-async def vec_add(name: str, vecs: list[Vector]):
+async def vec_add(idx_name: str, vecs: list[Vector]) -> None:
     await client.upsert(
-        collection_name=name,
+        collection_name=idx_name,
         points=[
             PointStruct(id=vec.id, vector=vec.vector, payload=vec.payload)
             for vec in vecs
@@ -62,17 +65,32 @@ async def vec_add(name: str, vecs: list[Vector]):
     )
 
 
-async def vec_del(name: str, ids: list[int]):
-    await client.delete(collection_name=name, points_selector=PointIdsList(points=ids))
+async def vec_del(idx_name: str, ids: list[int]) -> None:
+    await client.delete(
+        collection_name=idx_name, points_selector=PointIdsList(points=ids)
+    )
 
 
 # Query
 # -----
 
 
-async def query(name: str, vec: list[float], limit: int = 10):
+async def query(
+    idx_name: str,
+    vec: list[float],
+    limit: int = 10,
+    filter_ids: Optional[list[int]] = None,
+) -> list[Hit]:
+    point_id_filter = (
+        Filter(must=[HasIdCondition(has_id=filter_ids)]) if filter_ids else None
+    )
+
     results = await client.query_points(
-        collection_name=name, query_vector=vec, limit=limit, with_vectors=True
+        collection_name=idx_name,
+        query_vector=vec,
+        limit=limit,
+        with_vectors=True,
+        filter=point_id_filter,
     )
 
     return [Hit(id=p.id, vector=p.vector, score=p.score) for p in results.points]
