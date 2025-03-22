@@ -11,6 +11,10 @@ db.row_factory = sqlite3.Row
 
 db.executescript("""
     PRAGMA foreign_keys = ON;
+    PRAGMA journal_mode = WAL;
+    PRAGMA synchronous = NORMAL;
+    PRAGMA cache_size = -20000;
+    PRAGMA temp_store = MEMORY;
 """)
 
 SCHEMA = """
@@ -30,22 +34,23 @@ CREATE TABLE IF NOT EXISTS bundles (
     FOREIGN KEY (idx) REFERENCES indexes (name) ON DELETE CASCADE
 ) WITHOUT ROWID;
 
-CREATE TABLE IF NOT EXISTS blocks (
+CREATE TABLE IF NOT EXISTS chunks (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     idx             TEXT NOT NULL,
     bundle_id       TEXT NOT NULL,
     content         TEXT NOT NULL,
     ref             TEXT NOT NULL,
-    block_order     INTEGER NOT NULL,
+    chunk_order     INTEGER NOT NULL,
 
     FOREIGN KEY (bundle_id, idx) REFERENCES bundles (id, idx) ON DELETE CASCADE
 );
 
--- Enforce unique block ordering per bundle
-CREATE UNIQUE INDEX IF NOT EXISTS ux_blocks_bundle_order ON blocks(bundle_id, idx, "block_order");
+-- Enforce unique chunk ordering per bundle
+CREATE UNIQUE INDEX IF NOT EXISTS ux_chunks_bundle_order ON chunks(bundle_id, idx, "chunk_order");
 
-CREATE INDEX IF NOT EXISTS idx_blocks_bundle ON blocks(bundle_id);
-CREATE INDEX IF NOT EXISTS idx_blocks_idx    ON blocks(idx);
+CREATE INDEX IF NOT EXISTS idx_chunks_bundle ON chunks(bundle_id);
+CREATE INDEX IF NOT EXISTS ix_bundles_idx ON bundles(idx);
+CREATE INDEX IF NOT EXISTS ix_chunks_idx_bundle ON chunks(idx, bundle_id);
 """
 
 
@@ -138,9 +143,9 @@ def bundle_get(bundle_id: str, index: str):
     return dict(row) if row else None
 
 
-def bundle_list(bundle_id: str, index: str, page: int = 0, items: int = 0):
-    sql = "SELECT * FROM bundles WHERE id = ? AND idx = ?"
-    args = [bundle_id, index]
+def bundle_list(index: str, page: int = 0, items: int = 0):
+    sql = "SELECT * FROM bundles WHERE idx = ?"
+    args = [index]
 
     if items > 0:
         sql += " LIMIT ? OFFSET ?"
@@ -151,3 +156,72 @@ def bundle_list(bundle_id: str, index: str, page: int = 0, items: int = 0):
     rows = cur.fetchall()
 
     return [dict(row) for row in rows]
+
+
+# Chunks
+# ------
+
+
+def chunk_add(
+    index: str,
+    bundle_id: str,
+    content: str,
+    ref: str,
+    chunk_order: int,
+    cb: Optional[Callable] = None,
+) -> None:
+    with db:
+        db.execute(
+            "INSERT INTO chunks (idx, bundle_id, content, ref, chunk_order) VALUES (?, ?, ?, ?, ?)",
+            (index, bundle_id, content, ref, chunk_order),
+        )
+
+        if cb:
+            cb()
+
+
+def chunks_add(
+    chunks: list[tuple[str, str, str, str, int]],
+    cb: Optional[Callable] = None,
+) -> None:
+    with db:
+        db.executemany(
+            "INSERT INTO chunks (idx, bundle_id, content, ref, chunk_order) VALUES (?, ?, ?, ?, ?)",
+            chunks,
+        )
+
+        if cb:
+            cb()
+
+
+def chunk_get(chunk_id: int):
+    cur = db.cursor()
+    cur.execute("SELECT * FROM chunks WHERE id = ?", (chunk_id,))
+    row = cur.fetchone()
+    return dict(row) if row else None
+
+
+def chunks_get(chunk_ids: list[int]):
+    if len(chunk_ids) <= 900:
+        placeholders = ",".join("?" for _ in chunk_ids)
+        sql = f"SELECT * FROM chunks WHERE id IN ({placeholders})"
+        cur = db.cursor()
+        cur.execute(sql, chunk_ids)
+        return [dict(row) for row in cur.fetchall()]
+
+    # Fallback for >900 IDs
+    with db:
+        db.execute("CREATE TEMP TABLE IF NOT EXISTS temp_ids (id INTEGER PRIMARY KEY)")
+        db.execute("DELETE FROM temp_ids")
+
+        db.executemany(
+            "INSERT INTO temp_ids (id) VALUES (?)", [(cid,) for cid in chunk_ids]
+        )
+
+        cur = db.cursor()
+        cur.execute("""
+            SELECT c.* FROM chunks c
+            JOIN temp_ids t ON c.id = t.id
+        """)
+        rows = cur.fetchall()
+        return [dict(row) for row in rows]
