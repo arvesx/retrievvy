@@ -1,7 +1,7 @@
 import shutil
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional, Any
+from typing import Optional
 
 import xapian
 
@@ -16,7 +16,6 @@ from retrievvy.config import DIR_SPARSE
 class Doc:
     id: int
     content: str
-    payload: Optional[dict[str, Any]] = None
 
 
 @dataclass
@@ -130,7 +129,7 @@ def query(
         for match in mset:
             doc_id = int(match.document.get_data())
             score = match.percent
-            hits.append(Hit(id=doc_id, score=score))
+            hits.append(Hit(id=doc_id, score=score / 100))
         return hits
 
     finally:
