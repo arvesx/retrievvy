@@ -14,14 +14,14 @@ from retrievvy.config import DIR_SPARSE
 
 @dataclass
 class Doc:
-    id: str
+    id: int
     content: str
     payload: Optional[dict[str, Any]] = None
 
 
 @dataclass
 class Hit:
-    id: str
+    id: int
     score: float
 
 
@@ -74,7 +74,7 @@ def doc_add(idx_name: str, docs: list[Doc], lang: str = "en") -> None:
         db.close()
 
 
-def doc_del(idx_name: str, ids: list[str]) -> None:
+def doc_del(idx_name: str, ids: list[int]) -> None:
     path = DIR_SPARSE / idx_name
     db = xapian.WritableDatabase(str(path), xapian.DB_OPEN)
     try:
@@ -99,7 +99,7 @@ def query(
     idx_name: str,
     query: str,
     limit: int = 10,
-    filter_ids: Optional[list[str]] = None,
+    filter_ids: Optional[list[int]] = None,
     op: QueryOp = QueryOp.OR,
     lang: str = "en",
 ) -> list[Hit]:

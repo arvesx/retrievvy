@@ -25,6 +25,8 @@ from typing import Optional
 
 import torch
 from sentence_transformers import SentenceTransformer
+
+from tenacity import retry, stop_after_attempt, wait_fixed
 from loguru import logger
 
 
@@ -37,7 +39,7 @@ _embedding_process: Optional[mp.Process] = None
 # Worker (Separate Process)
 # -------------------------
 def worker(inq: mp.Queue, outq: mp.Queue):
-    model = SentenceTransformer("BAAI/bge-small-en-v1.5") # Load the model once
+    model = SentenceTransformer("BAAI/bge-small-en-v1.5")  # Load the model once
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model.to(device)
 
@@ -59,6 +61,7 @@ def worker(inq: mp.Queue, outq: mp.Queue):
 # -----------------------
 
 
+@retry(wait=wait_fixed(1), stop=stop_after_attempt(3), reraise=True)
 async def get_async(sentences: list[str]) -> list[list[float]]:
     """
     Asynchronously get the embedding using asyncio and run_in_executor.

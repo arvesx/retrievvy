@@ -120,7 +120,11 @@ def bundle_add(
 ) -> None:
     with db:
         db.execute(
-            "INSERT INTO bundles (id, idx, source, name) VALUES (?, ?, ?, ?)",
+            """
+            INSERT INTO bundles (id, idx, source, name) 
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(id, idx) DO NOTHING
+            """,  # two concurrent calls won’t error
             (bundle_id, index, source, name),
         )
 
@@ -158,6 +162,23 @@ def bundle_list(index: str, page: int = 0, items: int = 0):
     return [dict(row) for row in rows]
 
 
+def bundle_status_get(bundle_id: str, index: str):
+    cur = db.cursor()
+    cur.execute(
+        "SELECT status FROM bundles WHERE id = ? AND idx = ?", (bundle_id, index)
+    )
+    row = cur.fetchone()
+    return row["status"] if row else None
+
+
+def bundle_status_set(bundle_id: str, index: str, status: str):
+    with db:
+        db.execute(
+            "UPDATE bundles SET status = ? WHERE id = ? AND idx = ?",
+            (status, bundle_id, index),
+        )
+
+
 # Chunks
 # ------
 
@@ -182,16 +203,12 @@ def chunk_add(
 
 def chunks_add(
     chunks: list[tuple[str, str, str, str, int]],
-    cb: Optional[Callable] = None,
 ) -> None:
     with db:
         db.executemany(
             "INSERT INTO chunks (idx, bundle_id, content, ref, chunk_order) VALUES (?, ?, ?, ?, ?)",
             chunks,
         )
-
-        if cb:
-            cb()
 
 
 def chunk_get(chunk_id: int):
@@ -225,3 +242,17 @@ def chunks_get(chunk_ids: list[int]):
         """)
         rows = cur.fetchall()
         return [dict(row) for row in rows]
+
+
+def chunks_get_by_bundle_id(index: str, bundle_id: str):
+    cur = db.cursor()
+    cur.execute(
+        """
+        SELECT id, idx, bundle_id, content, ref, chunk_order 
+        FROM chunks 
+        WHERE idx = ? AND bundle_id = ? 
+        ORDER BY chunk_order ASC
+        """,
+        (index, bundle_id),
+    )
+    return [dict(row) for row in cur.fetchall()]
