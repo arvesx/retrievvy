@@ -1,7 +1,7 @@
 import numpy as np
 
-from indexes import dense, sparse
-from stats import gini
+from .indexes import dense, sparse
+from .stats import gini
 
 
 # that's some fast vectorized code :)

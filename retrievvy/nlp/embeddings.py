@@ -23,8 +23,7 @@ import multiprocessing as mp
 
 from typing import Optional
 
-import torch
-from sentence_transformers import SentenceTransformer
+from fastembed import TextEmbedding
 
 from tenacity import retry, stop_after_attempt, wait_fixed
 from loguru import logger
@@ -39,9 +38,7 @@ _embedding_process: Optional[mp.Process] = None
 # Worker (Separate Process)
 # -------------------------
 def worker(inq: mp.Queue, outq: mp.Queue):
-    model = SentenceTransformer("BAAI/bge-small-en-v1.5")  # Load the model once
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    model.to(device)
+    model = TextEmbedding("BAAI/bge-small-en-v1.5")  # Load the model once
 
     while True:
         # Wait for input
@@ -49,11 +46,8 @@ def worker(inq: mp.Queue, outq: mp.Queue):
         if sentences is None:
             break  # Termination signal
 
-        embedding = model.encode(
-            sentences, convert_to_tensor=True, normalize_embeddings=True, device=device
-        )
+        embedding_list = [emb.tolist() for emb in model.embed(sentences, batch_size=32)]
 
-        embedding_list = embedding.cpu().numpy().tolist()
         outq.put(embedding_list)
 
 

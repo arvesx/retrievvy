@@ -4,8 +4,8 @@ from starlette.routing import Route
 from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
 
-from webserver import middleware, hits, bundles, indexes
 from retrievvy import config
+from . import middleware, hits, bundles, indexes
 
 routes = [
     Route("/query", hits.get, methods=["GET"]),
@@ -35,4 +35,4 @@ app = Starlette(debug=config.DEBUG, routes=routes, middleware=middleware)
 
 
 def run(host=config.WEB_HOST, port=config.WEB_PORT):
-    uvicorn.run("webserver:app", host=host, port=port, reload=config.DEBUG)
+    uvicorn.run("retrievvy.webserver:app", host=host, port=port, reload=config.DEBUG)

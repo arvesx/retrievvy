@@ -2,12 +2,12 @@ import asyncio
 
 from msgspec import Struct
 
-import database
-import rerank
-import stats
+from . import database
+from . import rerank
+from . import stats
 
-from indexes import dense, sparse
-from nlp import keywords, embeddings
+from .indexes import dense, sparse
+from .nlp import keywords, embeddings
 
 # Types
 # -----

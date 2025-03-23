@@ -5,11 +5,11 @@ from typing import Literal
 from msgspec import Struct
 from loguru import logger
 
-import chunks
-import database
+from . import chunks
+from . import database
 
-from nlp import embeddings
-from indexes import sparse, dense
+from .nlp import embeddings
+from .indexes import sparse, dense
 
 # Types
 # -----

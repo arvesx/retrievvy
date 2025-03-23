@@ -1,12 +1,12 @@
 import sqlite3
 from typing import Callable, Optional
 
-from retrievvy.config import DATA
+from retrievvy.config import DATABASE
 
 # Init
 # -----
 
-db = sqlite3.connect(DATA)
+db = sqlite3.connect(DATABASE)
 db.row_factory = sqlite3.Row
 
 db.executescript("""

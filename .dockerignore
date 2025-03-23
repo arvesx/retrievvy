@@ -6,9 +6,16 @@
 .python-version
 README.md
 env.example
-.env
 
 venv/
+.venv/
 __pycache__/
 *.pyo
 *.pyd
+
+qdrant_storage
+storage
+data/
+*.sqlite
+*.db
+*.log

@@ -1,7 +1,7 @@
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 
-import config
+from retrievvy import config
 
 
 class AuthMiddleware(BaseHTTPMiddleware):
