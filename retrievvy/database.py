@@ -256,3 +256,17 @@ def chunks_get_by_bundle_id(index: str, bundle_id: str):
         (index, bundle_id),
     )
     return [dict(row) for row in cur.fetchall()]
+
+
+def chunks_get_by_index(index: str):
+    cur = db.cursor()
+    cur.execute(
+        """
+        SELECT id, idx, bundle_id, content, ref, chunk_order 
+        FROM chunks 
+        WHERE idx = ? 
+        ORDER BY chunk_order ASC
+        """,
+        (index,),
+    )
+    return [dict(row) for row in cur.fetchall()]

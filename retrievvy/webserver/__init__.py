@@ -4,7 +4,7 @@ from starlette.routing import Route
 from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
 
-from webserver import middleware, hits, bundles
+from webserver import middleware, hits, bundles, indexes
 from retrievvy import config
 
 routes = [
@@ -14,6 +14,10 @@ routes = [
     Route("/bundle", bundles.post, methods=["POST"]),
     Route("/bundle", bundles.delete, methods=["DELETE"]),
     Route("/bundles", bundles.list, methods=["GET"]),
+    # Indexes
+    Route("/index", indexes.get, methods=["GET"]),
+    Route("/index", indexes.delete, methods=["DELETE"]),
+    Route("/indexes", indexes.list, methods=["GET"]),
 ]
 
 middleware = [

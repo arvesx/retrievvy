@@ -7,6 +7,8 @@ from starlette.responses import Response
 from msgspec import Struct, Meta, ValidationError, convert
 from msgspec.json import Decoder, encode
 
+from loguru import logger
+
 from retrievvy.index import Bundle, run
 from retrievvy.indexes import dense, sparse
 from retrievvy import database
@@ -29,6 +31,10 @@ async def post(request: Request):
     except ValidationError as exc:
         content = encode({"detail": "Validation error", "errors": exc.errors()})
         return Response(content, status_code=422, media_type="application/json")
+
+    if database.index_get(bundle_obj.index) is None:
+        logger.info(f"Creating a new index with name '{bundle_obj.index}'")
+        database.index_add(bundle_obj.index)
 
     status = await run(bundle_obj)
     result = {"status": status}
