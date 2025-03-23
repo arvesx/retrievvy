@@ -1,0 +1,14 @@
+.git
+.gitignore
+.vscode/
+.idea/
+
+.python-version
+README.md
+env.example
+.env
+
+venv/
+__pycache__/
+*.pyo
+*.pyd

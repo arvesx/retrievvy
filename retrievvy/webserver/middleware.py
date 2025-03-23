@@ -6,7 +6,8 @@ import config
 
 class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
-        if bearer_token(request):
+        # if web token is empty, skip authentication
+        if not config.WEB_TOKEN or bearer_token(request):
             return await call_next(request)
 
         return JSONResponse({"error": "Unauthorized"}, status_code=401)

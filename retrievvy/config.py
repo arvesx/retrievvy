@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from starlette.config import Config
@@ -9,22 +10,27 @@ config = Config(".env")
 
 # Data
 # ----
-DATA = Path(config("DATA", default="data"))
+DATA = Path(config("DATA", default=os.getenv("DATA", "/app/data")))
 DIR_SPARSE = DATA / "sparse"
 
+# Qdrant
+# ------
+QDRANT_URL = config("QDRANT_URL", default=os.getenv("QDRANT_URL", "http://qdrant:6333"))
 
 # Webserver
 # ---------
-WEB_HOST = config("WEB_HOST")
-WEB_PORT = config("WEB_PORT", cast=int)
+WEB_HOST = config("WEB_HOST", default=os.getenv("WEB_HOST", "0.0.0.0"))
+WEB_PORT = config("WEB_PORT", cast=int, default=int(os.getenv("WEB_PORT", "7300")))
 
 # Secrets
 # -------
-WEB_TOKEN = config("WEB_TOKEN")
+WEB_TOKEN = config("WEB_TOKEN", default=os.getenv("WEB_TOKEN", ""))
 
 # Debugging
 # ---------
-DEBUG = config("DEBUG", cast=bool)
+DEBUG = config(
+    "DEBUG", cast=bool, default=os.getenv("DEBUG", "false").lower() == "true"
+)
 
 
 #

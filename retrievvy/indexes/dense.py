@@ -11,10 +11,12 @@ from qdrant_client.models import (
     HasIdCondition,
 )
 
+from retrievvy.config import QDRANT_URL
+
 # Client
 # ------
 
-client = AsyncQdrantClient(url="http://localhost:6333", timeout=60)
+client = AsyncQdrantClient(url=QDRANT_URL, timeout=60)
 
 # Type definitions
 # ----------------
