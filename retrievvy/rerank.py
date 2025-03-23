@@ -7,7 +7,7 @@ from stats import gini
 # that's some fast vectorized code :)
 
 
-async def adaptive_fusion(
+def adaptive_fusion(
     hits_dense: list[dense.Hit], hits_sparse: list[sparse.Hit]
 ) -> list[tuple[int, float]]:
     ids = list({h.id for h in hits_dense} | {h.id for h in hits_sparse})
