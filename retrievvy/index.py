@@ -1,6 +1,8 @@
 import asyncio
 from dataclasses import dataclass
 from typing import Literal
+
+from msgspec import Struct
 from loguru import logger
 
 import chunks
@@ -13,8 +15,7 @@ from indexes import sparse, dense
 # -----
 
 
-@dataclass
-class Bundle:
+class Bundle(Struct):
     id: str
     index: str
     source: str
