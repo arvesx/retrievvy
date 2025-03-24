@@ -24,6 +24,6 @@ def get(text: str, chunker: Literal["recursive"], chunk_size: int) -> list[str]:
             )
 
             chunks = chonker.chunk(text)
-            return [chunk.text for chunk in chunks]
+            return [str(chunk) for chunk in chunks]
         case _:
             raise ValueError(f"Unknown chunker type: {chunker}")

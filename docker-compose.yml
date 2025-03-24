@@ -1,7 +1,7 @@
 services:
   web:
     build: .
-    container_name: retrievvy_web
+    container_name: retrievvy
     ports:
       - "7300:7300"
     environment:

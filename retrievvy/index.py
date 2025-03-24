@@ -104,7 +104,7 @@ def _chunk(bundle: Bundle) -> list[Chunk]:
         block_ranges.append((pos, pos + length - 1, i))
         pos += length + 2  # account for "\n "
 
-    chunked_texts = chunks.get(combined)
+    chunked_texts = chunks.get(combined, "recursive", 512)
     produced = []
     cursor = 0
 

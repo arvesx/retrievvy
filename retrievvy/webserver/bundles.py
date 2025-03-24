@@ -34,6 +34,9 @@ async def post(request: Request):
 
     if database.index_get(bundle_obj.index) is None:
         logger.info(f"Creating a new index with name '{bundle_obj.index}'")
+        task_dense = dense.create(bundle_obj.index, 384)
+        task_sparse = asyncio.to_thread(sparse.create, bundle_obj.index)
+        await asyncio.gather(task_dense, task_sparse)
         database.index_add(bundle_obj.index)
 
     status = await run(bundle_obj)

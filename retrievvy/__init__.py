@@ -26,6 +26,7 @@ class Hit(Struct):
     content: str
     ref: str
     chunk_order: str
+    score: float
 
 
 class Result(Struct):
@@ -42,7 +43,7 @@ async def query(q: Query) -> Result:
     index = q.index
     limit = q.limit * 2 + 5  # Have a breathing room for the reranking process
     query_keywords = keywords.get(q.q)
-    query_embedding = await embeddings.get_async([q.q])
+    query_embedding = (await embeddings.get_async([q.q]))[0]
 
     # Query the indexes
     task_sparse = asyncio.to_thread(
@@ -63,11 +64,11 @@ async def query(q: Query) -> Result:
     chunk_map = {c["id"]: c for c in chunks_raw}
 
     hits: list[Hit] = []
-    for id in ids:
-        if id not in chunk_map:
+    for id, score in zip(ids, scores):
+        c = chunk_map.get(id)
+        if not c:
             continue
 
-        c = chunk_map[id]
         hits.append(
             Hit(
                 id=id,
@@ -75,6 +76,7 @@ async def query(q: Query) -> Result:
                 content=c["content"],
                 ref=c["ref"],
                 chunk_order=c["chunk_order"],
+                score=score,
             )
         )
 

@@ -14,9 +14,9 @@ from retrievvy import Query, query
 
 async def get(request: Request):
     try:
-        query_obj = convert(dict(request.query_params), Query)
+        query_obj = convert(dict(request.query_params), Query, strict=False)
     except ValidationError as exc:
-        content = encode({"detail": "Validation error", "errors": exc.errors()})
+        content = encode({"detail": "Validation error", "errors": str(exc)})
         return Response(content, status_code=422, media_type="application/json")
 
     result = await query(query_obj)

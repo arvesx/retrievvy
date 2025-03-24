@@ -16,6 +16,7 @@ __pycache__/
 qdrant_storage
 storage
 data/
+_scripts
 *.sqlite
 *.db
 *.log

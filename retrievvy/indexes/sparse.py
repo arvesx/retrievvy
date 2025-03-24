@@ -106,7 +106,7 @@ def query(
     db = xapian.Database(str(path))
     try:
         qp = xapian.QueryParser()
-        qp.set_default_op(op)
+        qp.set_default_op(op.value)
 
         stemmer = xapian.Stem(lang)
         qp.set_stemmer(stemmer)

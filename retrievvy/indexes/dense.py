@@ -89,10 +89,10 @@ async def query(
 
     results = await client.query_points(
         collection_name=idx_name,
-        query_vector=vec,
+        query=vec,
         limit=limit,
         with_vectors=True,
-        filter=point_id_filter,
+        query_filter=point_id_filter,
     )
 
     return [Hit(id=p.id, vector=p.vector, score=p.score) for p in results.points]

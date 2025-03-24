@@ -18,3 +18,4 @@ wheels/
 # other
 qdrant_storage
 storage
+data
