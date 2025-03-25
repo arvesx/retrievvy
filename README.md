@@ -116,7 +116,7 @@ curl "http://0.0.0.0:7300/query?q=how%20to%20deploy%20a%20docker%20app&index=my_
 Clone and launch quickly using Docker:
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/arvesx/retrievvy.git
 cd retrievvy
 docker compose up --build
 ```
