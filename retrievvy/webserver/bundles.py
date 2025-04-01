@@ -49,15 +49,15 @@ async def post(request: Request):
 
 class List(Struct):
     index: str
-    page: Annotated[Optional[int], Meta(ge=0)] = 0
-    items: Annotated[Optional[int], Meta(ge=0)] = 0
+    page: Annotated[int, Meta(ge=0)] = 0
+    items: Annotated[int, Meta(ge=0)] = 0
 
 
 async def list(request: Request):
     try:
-        params = convert(dict(request.query_params), List)
+        params = convert(dict(request.query_params), List, strict=False)
     except ValidationError as exc:
-        content = encode({"detail": "Validation error", "errors": exc.errors()})
+        content = encode({"detail": "Validation error", "errors": str(exc)})
         return Response(content, status_code=422, media_type="application/json")
 
     bundles = database.bundle_list(params.index, params.page, params.items)

@@ -153,7 +153,8 @@ def bundle_list(index: str, page: int = 0, items: int = 0):
 
     if items > 0:
         sql += " LIMIT ? OFFSET ?"
-        args.extend([items, page * items])
+        offset = max(0, page - 1) * items
+        args.extend([items, offset])
 
     cur = db.cursor()
     cur.execute(sql, args)
