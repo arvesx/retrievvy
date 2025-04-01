@@ -2,6 +2,8 @@
 
 Retrievvy is a **hybrid retrieval system** that blends modern embedding similarity search with classic textual search methods, designed explicitly for speed, efficiency, and reliability.
 
+![Retrievvy Banner](/assets/squirrel_banner.png)
+
 ---
 
 ## 🚀 Philosophy
