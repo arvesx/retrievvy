@@ -63,8 +63,16 @@ async def delete(request: Request):
         content = encode({"detail": "Query parameter `name` is required."})
         return Response(content, status_code=422, media_type="application/json")
 
-    index_chunks = database.chunks_get_by_index(name)
+    exists = database.index_get(name)
+    if not exists:
+        content = encode(
+            {
+                "detail": "Not found",
+            }
+        )
+        return Response(content, status_code=404, media_type="application/json")
 
+    index_chunks = database.chunks_get_by_index(name)
     ids: list[int] = [c["id"] for c in index_chunks]
 
     # TODO: consider making the following operations atomic
