@@ -1,5 +1,5 @@
 import asyncio
-from typing import Optional, Annotated
+from typing import Annotated
 
 from starlette.requests import Request
 from starlette.responses import Response
@@ -29,7 +29,7 @@ async def post(request: Request):
         bundle_bytes = await request.body()
         bundle_obj = decoder.decode(bundle_bytes)
     except ValidationError as exc:
-        content = encode({"detail": "Validation error", "errors": exc.errors()})
+        content = encode({"detail": "Validation error", "errors": str(exc)})
         return Response(content, status_code=422, media_type="application/json")
 
     if database.index_get(bundle_obj.index) is None:
@@ -77,8 +77,18 @@ async def delete(request: Request):
     try:
         params = convert(dict(request.query_params), Delete)
     except ValidationError as exc:
-        content = encode({"detail": "Validation error", "errors": exc.errors()})
+        content = encode({"detail": "Validation error", "errors": str(exc)})
         return Response(content, status_code=422, media_type="application/json")
+
+    exists = database.bundle_get(params.bundle_id, params.index)
+    if not exists:
+        content = encode(
+            {
+                "detail": "Not found",
+                "message": f"Bundle with id {params.bundle_id} not found in {params.index}",
+            }
+        )
+        return Response(content, status_code=404, media_type="application/json")
 
     bundle_chunks = database.chunks_get_by_bundle_id(params.index, params.bundle_id)
     chunk_ids: list[int] = [c["id"] for c in bundle_chunks]
@@ -112,7 +122,7 @@ async def get(request: Request):
     try:
         params = convert(dict(request.query_params), Get)
     except ValidationError as exc:
-        content = encode({"detail": "Validation error", "errors": exc.errors()})
+        content = encode({"detail": "Validation error", "errors": str(exc)})
         return Response(content, status_code=422, media_type="application/json")
 
     bundle = database.bundle_get(params.bundle_id, params.index)

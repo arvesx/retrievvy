@@ -39,15 +39,15 @@ async def get(request: Request):
 
 
 class List(Struct):
-    page: Annotated[Optional[int], Meta(ge=0)] = 0
-    items: Annotated[Optional[int], Meta(ge=0)] = 0
+    page: Annotated[int, Meta(ge=0)] = 0
+    items: Annotated[int, Meta(ge=0)] = 0
 
 
 async def list(request: Request):
     try:
-        params = convert(dict(request.query_params), List)
+        params = convert(dict(request.query_params), List, strict=False)
     except ValidationError as exc:
-        content = encode({"detail": "Validation error", "errors": exc.errors()})
+        content = encode({"detail": "Validation error", "errors": str(exc)})
         return Response(content, status_code=422, media_type="application/json")
 
     index_list = database.index_list(params.page, params.items)
@@ -64,6 +64,7 @@ async def delete(request: Request):
         return Response(content, status_code=422, media_type="application/json")
 
     index_chunks = database.chunks_get_by_index(name)
+
     ids: list[int] = [c["id"] for c in index_chunks]
 
     # TODO: consider making the following operations atomic
@@ -76,6 +77,6 @@ async def delete(request: Request):
             asyncio.to_thread(sparse.doc_del, name, ids),
         )
 
-    asyncio.create_task(cleanup_async())
+        asyncio.create_task(cleanup_async())
 
     return Response(status_code=204)
