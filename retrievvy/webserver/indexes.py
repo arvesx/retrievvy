@@ -1,5 +1,5 @@
 import asyncio
-from typing import Annotated, Optional
+from typing import Annotated
 
 from starlette.requests import Request
 from starlette.responses import Response
