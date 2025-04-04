@@ -26,8 +26,7 @@ async def get(request: Request):
     if index is None:
         content = encode(
             {
-                "detail": "Not found",
-                "message": f"Index with name {name} not found",
+                "detail": f"Index with name {name} not found",
             }
         )
         return Response(content, status_code=404, media_type="application/json")

@@ -128,8 +128,7 @@ async def get(request: Request):
     if bundle is None:
         content = encode(
             {
-                "detail": "Not found",
-                "message": f"Bundle with id {params.bundle_id} not found in {params.index}",
+                "detail": f"Bundle with id {params.bundle_id} not found in {params.index}",
             }
         )
         return Response(content, status_code=404, media_type="application/json")

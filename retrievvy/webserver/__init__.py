@@ -5,7 +5,7 @@ from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
 
 from retrievvy import config
-from . import middleware, hits, bundles, indexes
+from . import middleware, hits, bundles, indexes, vectors
 
 routes = [
     Route("/query", hits.get, methods=["GET"]),
@@ -18,6 +18,8 @@ routes = [
     Route("/index", indexes.get, methods=["GET"]),
     Route("/index", indexes.delete, methods=["DELETE"]),
     Route("/indexes", indexes.list, methods=["GET"]),
+    # Vectors
+    Route("/vectors", vectors.list, methods=["GET"]),
 ]
 
 middleware = [

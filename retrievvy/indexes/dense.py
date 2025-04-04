@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional, Any
-
+from qdrant_client.http.exceptions import UnexpectedResponse
 from qdrant_client import AsyncQdrantClient
 from qdrant_client.models import (
     PointStruct,
@@ -71,6 +71,23 @@ async def vec_del(idx_name: str, ids: list[int]) -> None:
     await client.delete(
         collection_name=idx_name, points_selector=PointIdsList(points=ids)
     )
+
+
+async def vec_list(idx_name: str, offset: int, limit: int) -> tuple[list[Vector], int]:
+    try:
+        points, next_offset = await client.scroll(
+            collection_name=idx_name,
+            scroll_filter=None,
+            with_vectors=True,
+            with_payload=False,
+            limit=limit,
+            offset=offset,
+        )
+
+    except UnexpectedResponse as exc:
+        raise LookupError(str(exc))
+
+    return [Vector(id=point.id, vector=point.vector) for point in points], next_offset
 
 
 # Query
