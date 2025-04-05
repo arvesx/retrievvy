@@ -31,6 +31,8 @@ class Hit(Struct):
 
 class Result(Struct):
     gini: float
+    range: float
+    avg_gap: float
     hits: list[Hit]
 
 
@@ -57,7 +59,6 @@ async def query(q: Query) -> Result:
     ids, scores = zip(*fused)
     ids = list(ids)
     scores = list(scores)
-    gini = stats.gini(scores)  # Measures ranking quality
 
     # Fetch chunk data and build a lookup to preserve the fused order
     chunks_raw = database.chunks_get(ids)
@@ -81,4 +82,14 @@ async def query(q: Query) -> Result:
         )
 
     hits = hits[: q.limit]  # original requested limit
-    return Result(gini=gini, hits=hits)
+    final_scores = [h.score for h in hits]
+
+    # Measure ranking quality -----------------------------------------
+    # For a clear, decisive ranking we should look for a wide
+    # score range, high variance, and large average gaps between scores.
+
+    gini = stats.gini(final_scores)
+    range_ = stats.range(final_scores)
+    avg_gap = stats.avg_gap(final_scores)
+
+    return Result(gini=gini, range=range_, avg_gap=avg_gap, hits=hits)
