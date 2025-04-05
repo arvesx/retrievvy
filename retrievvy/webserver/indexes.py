@@ -71,19 +71,15 @@ async def delete(request: Request):
         )
         return Response(content, status_code=404, media_type="application/json")
 
-    index_chunks = database.chunks_get_by_index(name)
-    ids: list[int] = [c["id"] for c in index_chunks]
-
     # TODO: consider making the following operations atomic
-
-    database.index_del(name=name)
 
     async def cleanup_async():
         await asyncio.gather(
-            dense.vec_del(name, ids),
-            asyncio.to_thread(sparse.doc_del, name, ids),
+            dense.delete(name),
+            asyncio.to_thread(sparse.delete, name),
         )
 
-        asyncio.create_task(cleanup_async())
+    asyncio.create_task(cleanup_async())
+    database.index_del(name=name)
 
     return Response(status_code=204)
